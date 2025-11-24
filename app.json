@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.Alarmer"
     },
     "web": {
       "output": "static",
@@ -36,6 +37,31 @@
           "backgroundColor": "#ffffff",
           "dark": {
             "backgroundColor": "#000000"
+          }
+        }
+      ],
+     [
+        "@react-native-community/datetimepicker",
+        {
+          "android": {
+            "datePicker": {
+              "colorAccent": {
+                "light": "#FF5722"
+              },
+              "textColorPrimary": {
+                "light": "#FF5722"
+              }
+            },
+            "timePicker": {
+              "background": {"light": "#EE4B2B", "dark": "#EE4B2B"},
+              "numbersBackgroundColor": {"light": "#EE4B2B", "dark": "#EE4B2B"},
+              "colorAccent": {
+                "light": "#EE4B2B"
+              },
+              "textColorPrimary": {
+                "light": "#EE4B2B"
+              }
+            }
           }
         }
       ]
