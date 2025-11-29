@@ -1,41 +1,25 @@
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useState } from "react";
-import { Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
 import type { AlarmDatum } from "@/types/types";
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
-type DayOfWeekInitial = "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
+type DayOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-export default function AlarmItem (props : {key: number, alarmDatum: AlarmDatum})  {
-    const colorScheme = useColorScheme();
-    
-    const {key, alarmDatum} = props;
+type AlarmItemsProps = {
+    key: number, 
+    alarmDatum: AlarmDatum,
+    activeSwitchHandler: (id: number) => void
+}
 
-    const [isEnabled, setIsEnabled] = useState<boolean>(false);
+export default function AlarmItem (props : AlarmItemsProps)  {    
+    const {key, alarmDatum, activeSwitchHandler} = props;
 
-    const allDaysOfWeekInitials: DayOfWeekInitial[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const router = useRouter();
 
-    const activeDaysOfWeekInitials = alarmDatum.daysOfWeek.map((dayOfWeek) => {
-        switch (dayOfWeek) {
-            case "sunday":
-              return "Sun";
-            case "monday":
-                return "Mon";
-            case "tuesday":
-                return "Tue";
-            case "wednesday":
-                return "Wed";
-            case "thursday":
-                return "Thu";
-            case "friday":
-                return "Fri";
-            case "saturday":
-                return "Sat";
-            }
-    })
 
     return(
-        <View 
+        <Pressable 
             key = {alarmDatum.id}    
             style={{
                 flexDirection: "row",
@@ -43,43 +27,59 @@ export default function AlarmItem (props : {key: number, alarmDatum: AlarmDatum}
                 alignItems: "center",
                 backgroundColor: "#212121",
                 height: 120,
-                // width: "100%",
                 borderRadius: 12,
                 padding: 15,
-        }}>
-            <View>
+            }}
+            onPress={() => {
+                router.push(`/(tabs)/alarms/${alarmDatum.id}`)}}>
+            <View >
                 <View style={{
                     flexDirection: "row",
                     gap: 10
                 }}>
-                    {allDaysOfWeekInitials.map((dayOfWeekInitial : DayOfWeekInitial) => (
-                        <Text key={dayOfWeekInitial} 
-                        style={{
-                            color: activeDaysOfWeekInitials.includes(dayOfWeekInitial) 
-                            ? "white" 
-                            : "#606060",
-                        }}> 
-                            {dayOfWeekInitial[0]}
-                        </Text>
-                        ))}
+                    {
+                    alarmDatum.daysOfWeek.map((dayOfWeek) => (
+                        <Text key={dayOfWeek.name} style={{ color: 
+                        dayOfWeek.active ? "white" 
+                        : "#606060"}}> 
+                            {dayOfWeek.name[0].toUpperCase()}
+                        </Text>    
+                    ))}
                 </View>
-                <Text
-                    style={{
+                <Text style={{
                         color: "white",
                         fontSize: 32,
                     }}> 
-                    {alarmDatum.time}
+                    {// the following method has options. no need for sub-stringing
+                    alarmDatum.time.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true, // or false for 24-hour
+                    })
+                    }
+                </Text>
+                <Text style={{
+                    color: "white",
+                    fontSize: 16,
+                }}>
+                    {alarmDatum.alarmName} 
                 </Text>
             </View>
             
-            <View>
+            <View style={{
+                alignSelf: "stretch",
+                flexDirection: "column", 
+                justifyContent: "space-between", 
+                alignItems: "flex-end", 
+                paddingVertical: 5}}>
                 <Switch 
-                    onValueChange={() => setIsEnabled(prevState => !prevState)}
-                    value={isEnabled}
-                    style={{ transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }] }}
+                    onValueChange={() => activeSwitchHandler(alarmDatum.id)}
+                    value={alarmDatum.active}
+                    style={{ transform: [{ scaleX: 1.25 }, { scaleY: 1.25 }] }}
                 />
+                <MaterialIcons size={24} name="delete" color="white" ></MaterialIcons>
             </View>
-        </View>
+        </Pressable>
     )
 }
      

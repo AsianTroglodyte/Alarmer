@@ -1,183 +1,179 @@
-import type { AlarmData } from "@/types/types";
+import type { AlarmsData } from "@/types/types";
 
-export const alarms: AlarmData = [{
-    id: 0, 
-    repeating: true,
-    daysOfWeek: ["sunday", "saturday"],
-    time: "12:00 pm",
+export const getAlarmData = (): AlarmsData => ([
+  {
+    id: 0,
+    alarmName: "Morning Alarm",
+    daily: false,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: false },
+      { name: "tuesday", active: false },
+      { name: "wednesday", active: false },
+      { name: "thursday", active: false },
+      { name: "friday", active: false },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 12, 0),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: true, rampDurationSeconds: 300 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 1, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
+    extraLoud: true,
+    volume: 0.78,
+  },
+  {
+    id: 1,
+    alarmName: "Workout Alarm",
+    daily: true,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: true },
+      { name: "thursday", active: true },
+      { name: "friday", active: true },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 7, 0),
+    active: false,
+    activities: [
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
+    ],
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: false, rampDurationSeconds: 30 },
+    vibrations: true,
+    extraLoud: true,
+    volume: 0.1,
+  },
+  {
+    id: 2,
+    alarmName: "Study Alarm",
+    daily: false,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: true },
+      { name: "thursday", active: true },
+      { name: "friday", active: false },
+      { name: "saturday", active: false },
+    ],
+    time: new Date(1, 1, 1, 18, 9),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: true, rampDurationSeconds: 15 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 2, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
+    extraLoud: true,
+    volume: 0.5,
+  },
+  {
+    id: 3,
+    alarmName: "Work Alarm",
+    daily: true,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: true },
+      { name: "thursday", active: true },
+      { name: "friday", active: true },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 18, 9),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: false, rampDurationSeconds: 60 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 3, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
+    extraLoud: true,
+    volume: 0.3,
+  },
+  {
+    id: 4,
+    alarmName: "Evening Alarm",
+    daily: false,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: false },
+      { name: "thursday", active: false },
+      { name: "friday", active: true },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 18, 9),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: false, rampDurationSeconds: 60 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 4, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
+    extraLoud: true,
+    volume: 1,
+  },
+  {
+    id: 5,
+    alarmName: "Weekend Alarm",
+    daily: true,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: true },
+      { name: "thursday", active: true },
+      { name: "friday", active: true },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 18, 9),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: false, rampDurationSeconds: 60 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 5, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
+    extraLoud: true,
+    volume: 0.9,
+  },
+  {
+    id: 7,
+    alarmName: "Holiday Alarm",
+    daily: true,
+    daysOfWeek: [
+      { name: "sunday", active: true },
+      { name: "monday", active: true },
+      { name: "tuesday", active: true },
+      { name: "wednesday", active: true },
+      { name: "thursday", active: true },
+      { name: "friday", active: true },
+      { name: "saturday", active: true },
+    ],
+    time: new Date(1, 1, 1, 18, 9),
     active: true,
     activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
+      { type: "math", difficulty: "easy", times: 3 },
+      { type: "steps", stepsNumber: 400 },
     ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
+    snooze: { active: true, intervalMinutes: 1, maxSnores: 3 },
+    gentleWakeUp: { active: false, rampDurationSeconds: 60 },
     vibrations: true,
-    sound: true,
-},
-{
-    id: 7, 
-    repeating: true,
-    daysOfWeek: ["sunday", "monday", "tuesday", 
-        "wednesday", "thursday", "friday", "saturday"],
-    time: "6:09 pm",
-    active: true,
-    activities: [
-        {
-            type: "math",
-            difficulty: "easy",
-            times: 3
-        },
-        {
-            type: "steps",
-            stepsNumber: 400, // min of 15 and max of 990
-        },
-    ],
-    snooze: {
-        intervalMinutes: 1,
-        maxSnores: 3,
-    },
-    gentleWakeUp: true,
-    vibrations: true,
-    sound: true,
-}];
+    extraLoud: true,
+    volume: 0.6,
+  },
+]);

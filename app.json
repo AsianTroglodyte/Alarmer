@@ -46,21 +46,18 @@
           "android": {
             "datePicker": {
               "colorAccent": {
-                "light": "#FF5722"
+                "light": "#444",
+                "dark": "#444"
               },
               "textColorPrimary": {
-                "light": "#FF5722"
+                "light": "#444"
               }
             },
             "timePicker": {
-              "background": {"light": "#EE4B2B", "dark": "#EE4B2B"},
-              "numbersBackgroundColor": {"light": "#EE4B2B", "dark": "#EE4B2B"},
-              "colorAccent": {
-                "light": "#EE4B2B"
-              },
-              "textColorPrimary": {
-                "light": "#EE4B2B"
-              }
+              "background": {"light": "#444", "dark": "#444"},
+              "numbersBackgroundColor": {"light": "#444", "dark": "#444"},
+            //   "headerBackground": {"light": "#EE4B2B", "dark": "#EE4B2B"},
+            //   "numbersSelectorColor": {"light": "#EE4B2B", "dark": "#EE4B2B"},
             }
           }
         }

@@ -1,14 +1,35 @@
 import AlarmItem from '@/components/alarm-item';
-import { alarms } from '@/dummy-data/dummy-data';
 import { AlarmDatum } from '@/types/types';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
+import { useContext } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AlarmsDataContext } from './_layout';
+
 
 export default function AlarmScreen() {
     const router = useRouter();
+    
+    const context = useContext(AlarmsDataContext);
+    if (!context) {
+        throw new Error('AlarmsDataContext is not available');
+    }
+    const { alarmsData, setAlarmsData } = context;
+    
+    // const alarms = getAlarm();
+    
+    // const [alarms, setAlarms] = useState<AlarmsData>(alarmsData);
 
+    function activeSwitchHandler (id: number) {
+        setAlarmsData(prev =>
+            prev.map(alarm =>
+            alarm.id === id
+                ? { ...alarm, active: !alarm.active }
+                : alarm
+            )
+        );
+    }
 
     return (
     <SafeAreaView style={{
@@ -30,8 +51,8 @@ export default function AlarmScreen() {
                 borderRadius: 12,
                 justifyContent: "center",
             }}>
-                {alarms.map((alarmDatum: AlarmDatum) => (
-                    <AlarmItem key={alarmDatum.id} alarmDatum={alarmDatum}></AlarmItem>
+                {alarmsData.map((alarmDatum: AlarmDatum) => (
+                    <AlarmItem key={alarmDatum.id} alarmDatum={alarmDatum} activeSwitchHandler={activeSwitchHandler}></AlarmItem>
                 ))}
             </View>
 
@@ -52,10 +73,12 @@ export default function AlarmScreen() {
             }
         ]}
         onPress={() => {
-            router.push('/(tabs)/alarms/alarm-details');
+            router.push('/(tabs)/alarms/new-alarm-config');
         }}>
             <MaterialIcons name="add" size={36} color="white" />
         </Pressable>
+
+
     </SafeAreaView>
   );
 }
