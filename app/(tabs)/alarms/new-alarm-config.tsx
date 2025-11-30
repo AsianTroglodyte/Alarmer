@@ -1,14 +1,18 @@
 import GentleWakeupModal from "@/components/modals/gentle-wakeup-modal";
 import SnoozeModal from "@/components/modals/snooze-modal";
 import WallpaperModal from "@/components/modals/wallpaper-modal";
+import { AlarmsDataContext } from '@/context/alarms-data';
+import type { Activity, AlarmDatum, AlarmsData } from '@/types/types';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import Slider from '@react-native-community/slider';
 import { Checkbox } from 'expo-checkbox';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useState } from "react";
+import { useRouter } from 'expo-router';
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export default function AddAlarnScreen() {
     // useState for determinign whehter to show modals
@@ -28,35 +32,28 @@ export default function AddAlarnScreen() {
     const [alarmName, setAlarmName] = useState("");
     const [alarmTime, setAlarmTime] = useState<Date>(new Date(2024, 2, 8, 0));
     const [daily, setDaily] = useState(false);
-    const [vibrationEnabled, setVibrationEnabled] = useState(true);
+    const [vibrationsEnabled, setvibrationsEnabled] = useState(true);
     const [volume, setVolume] = useState(1);
     const [snooze, setSnooze] = useState({
         active: true,
         intervalMinutes: 5,
         maxSnores: 3
     },);
-    const [activeDaysOfWeek, setActiveDaysOfWeek] = useState<{
-        key: string,
-        initial: string,
-        active: boolean
-        }[]>([
-        {key: "sunday", initial: "S", active: false}, 
-        {key: "monday", initial: "M", active: true}, 
-        {key: "tuesday", initial: "T", active: true}, 
-        {key: "wednesday", initial: "W", active: true},
-        {key: "thursday", initial: "T", active: true}, 
-        {key: "friday", initial:"F", active: true}, 
-        {key: "saturday", initial:"S", active: false}
+    const [activeDaysOfWeek, setActiveDaysOfWeek] = useState([
+      { name: "sunday", active: true },
+      { name: "monday", active: false },
+      { name: "tuesday", active: false },
+      { name: "wednesday", active: false },
+      { name: "thursday", active: false },
+      { name: "friday", active: false },
+      { name: "saturday", active: true },
     ]);
-    const [activities, setActivities] = useState<{ key: number; text: string }[]>([
-        {key : 0, text: "math"},
-        {key : 1, text: "steps"},
-        {key : 2, text: "qrcode"},
-        {key : 3, text: "photo"},
-        {key : 4, text: "shake"},
-        {key : 5, text: "squat"},
-    ]);
+    // initialize activities from canonical alarm data (dummy data via context) when available
+    const context = useContext(AlarmsDataContext);
+    const setAlarmsData = context?.setAlarmsData;
+    const defaultAlarm = useMemo(() => (context?.alarmsData ?? [])[0], [context?.alarmsData]);
 
+    const [activities, setActivities] = useState<Activity[]>(defaultAlarm?.activities ?? []);
 
 
     // Handler for forms
@@ -68,21 +65,18 @@ export default function AddAlarnScreen() {
         if (date !== undefined) {
             setAlarmTime(date);
         }
-
-        console.log(date?.getTime());
-        console.log(date?.toISOString());
-        console.log("local time: ", date?.toLocaleTimeString())
+ 
     }
     
     function vibrationToggleHandler() {
-        setVibrationEnabled((prev) => !prev);
+        setvibrationsEnabled((prev) => !prev);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
 
 
-    function activeDaysOfWeekHandler(key: string) {
+    function activeDaysOfWeekHandler(name: string) {
         const updatedDaysOfWeek = [...activeDaysOfWeek];
-        const targetDayOfWeekIndex = activeDaysOfWeek.findIndex((day) => day.key === key);
+        const targetDayOfWeekIndex = activeDaysOfWeek.findIndex((day) => day.name === name);
 
         updatedDaysOfWeek[targetDayOfWeekIndex].active = !updatedDaysOfWeek[targetDayOfWeekIndex].active;
         
@@ -118,23 +112,47 @@ export default function AddAlarnScreen() {
 
 
     useEffect(() => {
-        
-        
+        // reference setActivities to avoid unused variable linting
+        void setActivities;
+
         return () => {
 
         }
     }, [])
 
 
+    const router = useRouter();
+
+    function handleSave() {
+        setAlarmsData?.((prev: AlarmsData | undefined) => {
+            const nextId = prev && prev.length ? Math.max(...prev.map((a: AlarmDatum) => a.id)) + 1 : 0;
+            const newAlarm: AlarmDatum = {
+                id: nextId,
+                alarmName,
+                daily,
+                // @ts-ignore loose shape from activeDaysOfWeek
+                daysOfWeek: activeDaysOfWeek as any,
+                time: alarmTime,
+                active: true,
+                activities,
+                snooze,
+                gentleWakeUp,
+                vibrationsEnabled: vibrationsEnabled,
+                extraLoudEnabled: extraLoudEnabled,
+                volume,
+            };
+            return prev ? [...prev, newAlarm] : [newAlarm];
+        });
+        router.back();
+    }
+
     return (
-    <ScrollView>
+    <View style={{ flex: 1, backgroundColor: "#121212" }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <SafeAreaView style={{
-            flex: 1,
             padding: 20,
             // layout header has too much space between the header and the body
             paddingTop: -50,
-            backgroundColor: "#121212",
-            // backgroundColor: "red",
             }}>
             
             <View style={{
@@ -149,6 +167,7 @@ export default function AddAlarnScreen() {
                     fontSize: 18,
                 }}
                 placeholder="Enter Alarm Name Here!"
+                placeholderTextColor={'grey'}
                 value={alarmName}
                 onChangeText={(newString) => {setAlarmName(newString)}}>
                 </TextInput>
@@ -210,7 +229,7 @@ export default function AddAlarnScreen() {
                         activeDaysOfWeek.filter((day) => day.active).length === 0 ? "One-Time": 
                         activeDaysOfWeek.map((day) => 
                             day.active 
-                            ? day.key.charAt(0).toUpperCase() + day.key.slice(1,3)  
+                            ? day.name.charAt(0).toUpperCase() + day.name.slice(1,3)  
                             : "").filter((item) => item !== "").join(", ")}
                     </Text>
                     <View style={{
@@ -237,7 +256,7 @@ export default function AddAlarnScreen() {
                     gap: 10,
                 }}>
                     {activeDaysOfWeek.map((dayOfWeek) => {
-                        return <Pressable key={dayOfWeek.key} style={{
+                        return <Pressable key={dayOfWeek.name} style={{
                             height: 42,
                             width: 43,
                             backgroundColor: dayOfWeek.active ? "#2f4f4f" : "#212121",
@@ -245,11 +264,11 @@ export default function AddAlarnScreen() {
                             alignItems: "center",
                             borderRadius: 10,
                         }}
-                        onPress={() => activeDaysOfWeekHandler(dayOfWeek.key)}>
+                        onPress={() => activeDaysOfWeekHandler(dayOfWeek.name)}>
                             <Text style={{
                                 color: dayOfWeek.active ? "white" : "gray",
                             }}>
-                                {dayOfWeek.initial}
+                                {dayOfWeek.name[0].toUpperCase()}
                             </Text>
                         </Pressable>
                     })}
@@ -284,26 +303,28 @@ export default function AddAlarnScreen() {
                         gap: 10,
                         marginBottom: 10, // so that scroll bar doesn't overlap with items
                     }}>
-                        {activities.map((activity) => {
-                            return <View key={activity.key} style={{
-                                backgroundColor: "darkslategrey", // #2f4f4f
-                                padding: 10,
-                                borderRadius: 10,
-                                height: 70,
-                                width: 70,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                                {
-                                activity.text === "math" ? <MaterialIcons name="calculate" size={24} color="mediumturquoise" /> : 
-                                activity.text === "steps" ? <MaterialIcons name="directions-walk" size={24} color="mediumturquoise" /> :
-                                activity.text === "qrcode" ? <MaterialIcons name="qr-code-scanner" size={24} color="mediumturquoise" /> :
-                                activity.text === "photo" ? <MaterialIcons name="camera-alt" size={24} color="mediumturquoise" /> :
-                                activity.text === "shake" ? <MaterialIcons name="vibration" size={24} color="mediumturquoise" /> :
-                                activity.text === "squat" ? <MaterialIcons name="fitness-center" size={24} color="mediumturquoise" /> :
-                                <MaterialIcons name="question-mark" size={24} color="mediumturquoise" />
-                                }                 
-                            </View>
+                        {activities.map((activity, idx) => {
+                            const key = `${activity.type}-${idx}`;
+                            return (
+                                <View key={key} style={{
+                                    backgroundColor: "darkslategrey",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                    height: 70,
+                                    width: 70,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}>
+                                    {activity.type === 'math' ? (<MaterialIcons name="calculate" size={24} color="mediumturquoise" />) : 
+                                    activity.type === 'steps' ? (<MaterialIcons name="directions-walk" size={24} color="mediumturquoise" />) : 
+                                    activity.type === 'qrcode' ? (<MaterialIcons name="qr-code-scanner" size={24} color="mediumturquoise" />) : 
+                                    activity.type === 'photo' ? (<MaterialIcons name="camera-alt" size={24} color="mediumturquoise" />) : 
+                                    activity.type === 'shake' ? (<MaterialIcons name="vibration" size={24} color="mediumturquoise" />) : 
+                                    activity.type === 'squat' ? (<MaterialIcons name="fitness-center" size={24} color="mediumturquoise" />) : 
+                                    (<MaterialIcons name="question-mark" size={24} color="mediumturquoise" />
+                                    )}
+                                </View>
+                            );
                         })}
         
                     </View>
@@ -378,7 +399,7 @@ export default function AddAlarnScreen() {
                             borderColor: "gray",
                             borderWidth: 2,
                         }} 
-                            value={vibrationEnabled}
+                            value={vibrationsEnabled}
                             onValueChange={vibrationToggleHandler}>
 
                         </Checkbox>
@@ -511,7 +532,26 @@ export default function AddAlarnScreen() {
                         setShowWallpaperModal={setShowWallpaperModal}/>
                 </View>
             </View>
-        </SafeAreaView>
-    </ScrollView>
-    )
+                </SafeAreaView>
+            </ScrollView>
+
+            <Pressable style={({pressed}) => [
+                { backgroundColor: pressed ? "#EE4B2B" : "#FF5722" },
+                {
+                    position: 'absolute',
+                    bottom: 40,
+                    left: 40,
+                    right: 40,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 15,
+                    borderRadius: 10,
+                }
+            ]}
+                onPress={handleSave}>
+                <Text style={{fontWeight: "bold", fontSize: 18, color: "white"}}>Save</Text>
+            </Pressable>
+
+        </View>
+        )
 }

@@ -1,16 +1,17 @@
 import GentleWakeupModal from "@/components/modals/gentle-wakeup-modal";
 import SnoozeModal from "@/components/modals/snooze-modal";
 import WallpaperModal from "@/components/modals/wallpaper-modal";
+import { AlarmsDataContext } from '@/context/alarms-data';
+import type { Activity } from '@/types/types';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import Slider from '@react-native-community/slider';
 import { Checkbox } from 'expo-checkbox';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useContext, useMemo, useState } from "react";
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AlarmsDataContext } from "./_layout";
 
 export default function EditAlarmScreen() {
     // context for the canonical data. Updated when confirmed
@@ -36,28 +37,24 @@ export default function EditAlarmScreen() {
 
     // useState for the forms
     // consider memoizing the currentAlarmData as it runs on every rerender
-    let currentAlarmData = alarmsData.filter((alarmData) => (alarmData.id === parseInt(routeIdString)))[0];
+    const currentAlarmData = useMemo(
+    () => alarmsData.filter((alarmData) => alarmData.id === parseInt(routeIdString))[0],
+    [alarmsData, routeIdString]
+    );
+    // let currentAlarmData = alarmsData.filter((alarmData) => (alarmData.id === parseInt(routeIdString)))[0];
 
-    const [gentleWakeUp, setGentleWakeup] = useState({
-        active: true,
-        rampDurationSeconds: 60
-    });
-    const [extraLoudEnabled, setExtraLoudEnabled] = useState(currentAlarmData.extraLoud);
+    const [gentleWakeUp, setGentleWakeup] = useState(currentAlarmData.gentleWakeUp);
+    const [extraLoudEnabled, setExtraLoudEnabled] = useState(currentAlarmData.extraLoudEnabled);
     const [alarmName, setAlarmName] = useState(currentAlarmData.alarmName);
     const [alarmTime, setAlarmTime] = useState<Date>(currentAlarmData.time);
     const [daily, setDaily] = useState(currentAlarmData.daily);
-    const [vibrationEnabled, setVibrationEnabled] = useState(currentAlarmData.vibrations);
+    const [vibrationsEnabled, setvibrationsEnabled] = useState(currentAlarmData.vibrationsEnabled);
     const [volume, setVolume] = useState(currentAlarmData.volume);
     const [snooze, setSnooze] = useState(currentAlarmData.snooze);
     const [activeDaysOfWeek, setActiveDaysOfWeek] = useState<{ name: string; active: boolean }[]>(currentAlarmData.daysOfWeek);
-    const [activities, setActivities] = useState<{ key: number; text: string }[]>([
-        {key : 0, text: "math"},
-        {key : 1, text: "steps"},
-        {key : 2, text: "qrcode"},
-        {key : 3, text: "photo"},
-        {key : 4, text: "shake"},
-        {key : 5, text: "squat"},
-    ]);
+    const [activities, setActivities] = useState<Activity[]>(
+        currentAlarmData?.activities ?? []
+    );
 
 
 
@@ -73,7 +70,7 @@ export default function EditAlarmScreen() {
     }
     
     function vibrationToggleHandler() {
-        setVibrationEnabled((prev) => !prev);
+        setvibrationsEnabled((prev) => !prev);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
 
@@ -85,7 +82,7 @@ export default function EditAlarmScreen() {
 
         setActiveDaysOfWeek(updatedDaysOfWeek);
         
-        if (Object.values(updatedDaysOfWeek).filter((day) => day).length === 7) {
+        if (updatedDaysOfWeek.filter((dayOfWeek) => dayOfWeek.active === true).length === 7) {
             setDaily(true);
         }
         else {
@@ -119,25 +116,43 @@ export default function EditAlarmScreen() {
         ]);
     }
 
+    // Save handler: build updated alarm and write to context, then go back
+    const router = useRouter();
 
-    useEffect(() => {
-        
-        
-        return () => {
+    function handleSave() {
+        const id = currentAlarmData.id;
 
-        }
-    }, [])
+        const updatedAlarm = {
+            ...currentAlarmData,
+            alarmName,
+            time: alarmTime,
+            daily,
+            daysOfWeek: activeDaysOfWeek,
+            gentleWakeUp,
+            vibrationsEnabled,
+            extraLoudEnabled,
+            volume,
+            snooze,
+            activities,
+        };
+
+        setAlarmsData((prev) => prev.map((alarm) => (alarm.id === id ? (updatedAlarm as any) : alarm)));
+        router.back();
+    }
+
 
 
     return (
-    <ScrollView>
+    <View style={{ flex: 1, backgroundColor: "#121212" }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 120, // Space for the fixed save button
+        }}
+      >
         <SafeAreaView style={{
-            flex: 1,
             padding: 20,
             // layout header has too much space between the header and the body
             paddingTop: -50,
-            backgroundColor: "#121212",
-            // backgroundColor: "red",
             }}>
             
             <View style={{
@@ -152,6 +167,7 @@ export default function EditAlarmScreen() {
                     fontSize: 18,
                 }}
                 placeholder="Enter Alarm Name Here!"
+                placeholderTextColor={'grey'}
                 value={alarmName}
                 onChangeText={(newString) => {setAlarmName(newString)}}>
                 </TextInput>
@@ -274,8 +290,7 @@ export default function EditAlarmScreen() {
                     fontSize: 18,
                     fontWeight: "bold",
                 }}>
-                    Select
-                    Missions
+                    Create Missions
                 </Text>
                 <ScrollView horizontal={true} style={{
                     marginTop: 10,
@@ -287,28 +302,62 @@ export default function EditAlarmScreen() {
                         gap: 10,
                         marginBottom: 10, // so that scroll bar doesn't overlap with items
                     }}>
-                        {activities.map((activity) => {
-                            return <View key={activity.key} style={{
-                                backgroundColor: "darkslategrey", // #2f4f4f
-                                padding: 10,
-                                borderRadius: 10,
-                                height: 70,
-                                width: 70,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                                {
-                                activity.text === "math" ? <MaterialIcons name="calculate" size={24} color="mediumturquoise" /> : 
-                                activity.text === "steps" ? <MaterialIcons name="directions-walk" size={24} color="mediumturquoise" /> :
-                                activity.text === "qrcode" ? <MaterialIcons name="qr-code-scanner" size={24} color="mediumturquoise" /> :
-                                activity.text === "photo" ? <MaterialIcons name="camera-alt" size={24} color="mediumturquoise" /> :
-                                activity.text === "shake" ? <MaterialIcons name="vibration" size={24} color="mediumturquoise" /> :
-                                activity.text === "squat" ? <MaterialIcons name="fitness-center" size={24} color="mediumturquoise" /> :
-                                <MaterialIcons name="question-mark" size={24} color="mediumturquoise" />
-                                }                 
-                            </View>
+                        {activities.map((activity, idx) => {
+                            // Render based on the discriminated union `Activity.type`
+                            const key = `${activity.type}-${idx}`;
+                            let iconName: string = 'question-mark';
+
+                            switch (activity.type) {
+                                case 'math':
+                                    iconName = 'calculate';
+                                    break;
+                                case 'steps':
+                                    iconName = 'directions-walk';
+                                    break;
+                                case 'qrcode':
+                                    iconName = 'qr-code-scanner';
+                                    break;
+                                case 'photo':
+                                    iconName = 'camera-alt';
+                                    break;
+                                case 'shake':
+                                    iconName = 'vibration';
+                                    break;
+                                case 'squat':
+                                    iconName = 'fitness-center';
+                                    break;
+                                case 'gotolocation':
+                                    iconName = 'place';
+                                    break;
+                                default:
+                                    iconName = 'question-mark';
+                            }
+
+                            return (
+                                <View key={key} style={{
+                                    backgroundColor: 'darkslategrey',
+                                    padding: 10,
+                                    borderRadius: 10,
+                                    height: 70,
+                                    width: 70,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}>
+                                    <MaterialIcons name={iconName as any} size={24} color="mediumturquoise" />
+                                </View>
+                            );
                         })}
-        
+                        <View style={{
+                            backgroundColor: '#3b3b3b',
+                            padding: 10,
+                            borderRadius: 10,
+                            height: 70,
+                            width: 70,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}>
+                            <MaterialIcons name={"add"} size={24} color="mediumturquoise" />
+                        </View>
                     </View>
                 </ScrollView>
             </View>
@@ -381,7 +430,7 @@ export default function EditAlarmScreen() {
                             borderColor: "gray",
                             borderWidth: 2,
                         }} 
-                            value={vibrationEnabled}
+                            value={vibrationsEnabled}
                             onValueChange={vibrationToggleHandler}>
 
                         </Checkbox>
@@ -515,6 +564,30 @@ export default function EditAlarmScreen() {
                 </View>
             </View>
         </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Confirmation Button - Fixed at bottom */}
+    <Pressable style={({pressed}) => [
+        {
+          backgroundColor: pressed ? "#EE4B2B" : "#FF5722",
+        },
+        {
+        //   height: ,
+          position: "absolute",
+          bottom: 40,
+          left: 40,
+          right: 40,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 15,
+          borderRadius: 10,  
+        }
+      ]}
+                onPress={handleSave}>
+        <Text style={{fontWeight: "bold", fontSize: 18, color: "white"}}>
+          Save
+        </Text>
+      </Pressable>
+    </View>
     )
 }

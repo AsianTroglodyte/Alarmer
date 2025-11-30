@@ -1,4 +1,4 @@
-import { Tabs, useSegments } from 'expo-router';
+import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
@@ -8,14 +8,6 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const segments = useSegments();
-
-  // Hide the tab bar when inside nested routes of the `alarms` tab.
-  // This covers `alarms/new-alarm-config` and `alarms/[alarmEditId]`.
-  console.log(segments);
-  const isInsideAlarmSubroute = segments[0] === "(tabs)"
-  && segments[1] === 'alarms' 
-  && segments.length > 2;
 
   return (
     <Tabs
@@ -23,7 +15,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: isInsideAlarmSubroute ? { display: 'none' } : undefined,
+        sceneStyle: {backgroundColor: "#121212" }
       }}>
       <Tabs.Screen
         name="alarms"

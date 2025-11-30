@@ -43,16 +43,19 @@ export default function SnoozeModal(props: SnoozeModalProps) {
         setSnooze({...snooze, intervalMinutes: newIntervalsMinutes});
     }
 
-    function maxSnoozeHandler(value: string) {
+    function maxSnoozeHandler(amountString: string) {
         let newMaxSnores = -1;
 
         // NOTE: parseInt stops until it reaches a non-Int number
-        const minutes = parseInt(value);
-        if (!isNaN(minutes)) {
-            newMaxSnores = minutes;
+        const snoozeAmout = parseInt(amountString);
+        if (!isNaN(snoozeAmout)) {
+            newMaxSnores = snoozeAmout;
+        }
+        else if (amountString === "Unlimited") {
+            newMaxSnores = -1
         }
         else {
-            throw new Error("snoozeIntervalhandler not getting an integer. Fix it pronto");
+            throw new Error("maxSnoozeHandler not getting an integer. Fix it pronto");
         }
 
         setSnooze({...snooze, maxSnores: newMaxSnores});

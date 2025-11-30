@@ -1,11 +1,11 @@
 import AlarmItem from '@/components/alarm-item';
+import { AlarmsDataContext } from '@/context/alarms-data';
 import { AlarmDatum } from '@/types/types';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useContext } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlarmsDataContext } from './_layout';
 
 
 export default function AlarmScreen() {
@@ -32,24 +32,24 @@ export default function AlarmScreen() {
     }
 
     return (
-    <SafeAreaView style={{
-        flex: 1
-    }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
         <View>
             <Text style={{
                 color: "white",
                 padding: 15,
-                fontSize: 18,
-                fontWeight: "bold"
-            }}
-            > Ring in 5 hours</Text>
+                fontSize: 20,
+                fontWeight: "bold",
+                marginTop: 20,
+            }}>Ring in 5 hours</Text>
         </View>
-        <ScrollView>
+        <ScrollView style={{
+        }}>
             <View style={{
                 gap: 12,
                 padding: 12,
                 borderRadius: 12,
                 justifyContent: "center",
+                paddingBottom: 90
             }}>
                 {alarmsData.map((alarmDatum: AlarmDatum) => (
                     <AlarmItem key={alarmDatum.id} alarmDatum={alarmDatum} activeSwitchHandler={activeSwitchHandler}></AlarmItem>
@@ -57,6 +57,7 @@ export default function AlarmScreen() {
             </View>
 
         </ScrollView>
+
         <Pressable style={({pressed}) => [
             {
                 backgroundColor: pressed ? "#EE4B2B" : "#FF5722",
@@ -73,7 +74,7 @@ export default function AlarmScreen() {
             }
         ]}
         onPress={() => {
-            router.push('/(tabs)/alarms/new-alarm-config');
+            router.push('/new-alarm-config');
         }}>
             <MaterialIcons name="add" size={36} color="white" />
         </Pressable>

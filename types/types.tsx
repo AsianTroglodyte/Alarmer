@@ -60,8 +60,8 @@ export type AlarmDatum = {
         active: boolean,
         rampDurationSeconds: number
     },
-    vibrations: boolean,
-    extraLoud: boolean,
+    vibrationsEnabled: boolean,
+    extraLoudEnabled: boolean,
     volume: number,
 }
 
