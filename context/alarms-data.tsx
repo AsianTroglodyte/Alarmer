@@ -109,7 +109,8 @@ export default function AlarmsDataProvider({ children }: { children: React.React
       createChannelById('sound', 'Alarms', 'alarm_sound');
 
       // Schedule a repeating interval alarm
-      await scheduleRepeatingAlarm();
+      // TODO: Uncomment when ready to test alarms
+      // await scheduleRepeatingAlarm();
     })();
 
     }, [alarmsData]);

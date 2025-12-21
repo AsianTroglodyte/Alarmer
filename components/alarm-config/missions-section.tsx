@@ -1,12 +1,37 @@
 import type { Activity } from '@/types/types';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 interface MissionsSectionProps {
     activities: Activity[];
+    setShowAddActivityModal: () => void;
+    onEditActivity: (activity: Activity, index: number) => void;
 }
 
-export default function MissionsSection({ activities }: MissionsSectionProps) {
+export default function MissionsSection({ activities, setShowAddActivityModal, onEditActivity }: MissionsSectionProps) {
+    const handleAddActivity = () => {
+        setShowAddActivityModal();
+    };
+
+    const getActivityDetails = (activity: Activity): string => {
+        switch (activity.type) {
+            case 'math':
+                return `${activity.times}x ${activity.difficulty}`;
+            case 'steps':
+                return `${activity.stepsNumber} steps`;
+            case 'squat':
+                return `${activity.squatsNumber} squats`;
+            case 'shake':
+                return `${activity.shakeNumber}x ${activity.difficulty}`;
+            case 'photo':
+                return 'Photo';
+            case 'qrcode':
+                return 'QR Code';
+            default:
+                return '';
+        }
+    };
+
     return (
         <View style={{
             backgroundColor: "#212121",
@@ -36,16 +61,21 @@ export default function MissionsSection({ activities }: MissionsSectionProps) {
                 }}>
                     {activities.map((activity, idx) => {
                         const key = `${activity.type}-${idx}`;
+                        const details = getActivityDetails(activity);
                         return (
-                            <View key={key} style={{
-                                backgroundColor: "darkslategrey",
-                                padding: 10,
-                                borderRadius: 10,
-                                height: 70,
-                                width: 70,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
+                            <Pressable 
+                                key={key} 
+                                onPress={() => onEditActivity(activity, idx)}
+                                style={({ pressed }) => ({
+                                    backgroundColor: pressed ? "#2f4f4f" : "darkslategrey",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                    minWidth: 100,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    gap: 5,
+                                })}
+                            >
                                 {activity.type === 'math' ? (<MaterialIcons name="calculate" size={24} color="mediumturquoise" />) : 
                                 activity.type === 'steps' ? (<MaterialIcons name="directions-walk" size={24} color="mediumturquoise" />) : 
                                 activity.type === 'qrcode' ? (<MaterialIcons name="qr-code-scanner" size={24} color="mediumturquoise" />) : 
@@ -54,9 +84,36 @@ export default function MissionsSection({ activities }: MissionsSectionProps) {
                                 activity.type === 'squat' ? (<MaterialIcons name="fitness-center" size={24} color="mediumturquoise" />) : 
                                 (<MaterialIcons name="question-mark" size={24} color="mediumturquoise" />
                                 )}
-                            </View>
+                                <Text style={{
+                                    color: "mediumturquoise",
+                                    fontSize: 11,
+                                    textAlign: "center",
+                                    fontWeight: "600",
+                                }} numberOfLines={2}>
+                                    {details}
+                                </Text>
+                            </Pressable>
                         );
                     })}
+                    
+                    {/* Add New Activity Button */}
+                    <Pressable 
+                        onPress={handleAddActivity}
+                        style={({ pressed }) => ({
+                            backgroundColor: pressed ? "#2f4f4f" : "darkslategrey",
+                            padding: 10,
+                            borderRadius: 10,
+                            height: 70,
+                            width: 70,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            borderWidth: 2,
+                            borderColor: "mediumturquoise",
+                            borderStyle: "dashed",
+                        })}
+                    >
+                        <MaterialIcons name="add" size={32} color="mediumturquoise" />
+                    </Pressable>
     
                 </View>
             </ScrollView>

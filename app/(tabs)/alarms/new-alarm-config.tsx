@@ -4,6 +4,7 @@ import DaysOfWeekSelector from "@/components/alarm-config/days-of-week-selector"
 import MissionsSection from "@/components/alarm-config/missions-section";
 import OtherSettingsSection from "@/components/alarm-config/other-settings-section";
 import TimePickerSection from "@/components/alarm-config/time-picker-section";
+import AddActivityModal from "@/components/modals/add-activity-modal";
 import { AlarmsDataContext } from '@/context/alarms-data';
 import type { Activity, AlarmDatum, AlarmsData } from '@/types/types';
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -15,13 +16,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function AddAlarnScreen() {
+    const router = useRouter();
     // useState for determinign whehter to show modals
     const [showTimePicker, setShowTimePicker] =  useState(false);
     const [showGentleWakeupModal, setShowGentleWakeupModal] = useState(false);
     const [showSnoozeModal, setShowSnoozeModal] = useState(false);
     const [showWallpaperModal, setShowWallpaperModal] = useState(false);
+    const [showAddActivityModal, setShowAddActivityModal] = useState(false);
 
-
+    // Track which activity is being edited (null means adding new)
+    const [editingActivityIndex, setEditingActivityIndex] = useState<number | null>(null);
+    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
     // useState for the alarm config
     const [gentleWakeUp, setGentleWakeup] = useState({
@@ -121,7 +126,36 @@ export default function AddAlarnScreen() {
     }, [])
 
 
-    const router = useRouter();
+    function handleAddActivity() {
+        // Reset editing state when adding new activity
+        setEditingActivityIndex(null);
+        setEditingActivity(null);
+        setShowAddActivityModal(true);
+    }
+
+    function handleEditActivity(activity: Activity, index: number) {
+        // Set editing state
+        setEditingActivityIndex(index);
+        setEditingActivity(activity);
+        setShowAddActivityModal(true);
+    }
+
+    function handleActivityAdd(activity: Activity) {
+        if (editingActivityIndex !== null) {
+            // Update existing activity
+            setActivities(prev => {
+                const updated = [...prev];
+                updated[editingActivityIndex] = activity;
+                return updated;
+            });
+        } else {
+            // Add new activity
+            setActivities(prev => [...prev, activity]);
+        }
+        // Reset editing state
+        setEditingActivityIndex(null);
+        setEditingActivity(null);
+    }
 
     function handleSave() {
         setAlarmsData?.((prev: AlarmsData | undefined) => {
@@ -174,7 +208,11 @@ export default function AddAlarnScreen() {
 
 
             {/* MISSION SECTION */}
-            <MissionsSection activities={activities} />
+            <MissionsSection 
+                activities={activities} 
+                setShowAddActivityModal={handleAddActivity}
+                onEditActivity={handleEditActivity}
+            />
 
 
             {/* SOUND SECTION */}
@@ -210,6 +248,15 @@ export default function AddAlarnScreen() {
             />
                 </SafeAreaView>
             </ScrollView>
+
+            <AddActivityModal
+                visible={showAddActivityModal}
+                animationType="slide"
+                transparent={false}
+                setShowAddActivityModal={setShowAddActivityModal}
+                onActivityAdd={handleActivityAdd}
+                editingActivity={editingActivity}
+            />
 
             <Pressable style={({pressed}) => [
                 { backgroundColor: pressed ? "#EE4B2B" : "#FF5722" },
